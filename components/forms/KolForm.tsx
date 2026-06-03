@@ -56,8 +56,8 @@ export function KolForm({ onSubmit, onCancel, initial }: KolFormProps) {
         <SelectField label="Interest Check (Client)" value={form.interestCheckClient} onChange={set("interestCheckClient")} options={interestOptions} />
         <SelectField label="Interest Check (KOL)" value={form.interestCheckKol} onChange={set("interestCheckKol")} options={interestOptions} />
       </div>
-      <FormField label="YT Remarks" value={form.ytRemarks} onChange={set("ytRemarks")} placeholder="Internal notes" />
-      <FormField label="Client Remarks" value={form.clientRemarks} onChange={set("clientRemarks")} placeholder="Client feedback" />
+      <FormField label="Internal Remark (Col G – deleted before sending to client)" value={form.ytRemarks} onChange={set("ytRemarks")} placeholder="Notes between intern & BD" />
+      <FormField label="KOL Queries (Col H)" value={form.clientRemarks} onChange={set("clientRemarks")} placeholder="Questions or queries the KOL raised" />
       <div className="flex gap-2 justify-end pt-2">
         <Button type="button" variant="secondary" size="sm" onClick={onCancel}>Cancel</Button>
         <Button type="submit" size="sm" loading={loading}>Add KOL</Button>

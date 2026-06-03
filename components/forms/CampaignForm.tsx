@@ -7,7 +7,7 @@ import { FormField } from "./FormField";
 import { SelectField } from "./SelectField";
 import { TextareaField } from "./TextareaField";
 import { Button } from "@/components/ui/Button";
-import { STAGE_OPTIONS, PIC_LIST, BD_LIST, URGENCY_OPTIONS } from "@/lib/constants";
+import { STAGE_OPTIONS, STATUS_OPTIONS, URGENCY_OPTIONS } from "@/lib/constants";
 
 type FormData = Omit<Campaign, "rowIndex">;
 
@@ -24,6 +24,7 @@ const empty: FormData = {
   clientSheetLink: "", ytUniqueLink: "", ytAdminLink: "",
   internalSheet: "", copywriting: "", zynnApproval: "", telegramPosted: "",
   emailBlasted: "", fbGroupPosted: "", ytAdminContact: "", googleResearch: "", heepsyContact: "",
+  status: "Request Assign", specialRemarks: "", totalPax: "", statusUpdatedAt: "",
 };
 
 export function CampaignForm({ initial, mode, onSuccess }: CampaignFormProps) {
@@ -67,11 +68,7 @@ export function CampaignForm({ initial, mode, onSuccess }: CampaignFormProps) {
           <span className="ml-2 text-xs font-normal text-gray-400">Filled by BD team</span>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SelectField
-            label="PIC (Research)" value={form.pic} onChange={set("pic")}
-            options={PIC_LIST.map((p) => ({ value: p, label: p }))}
-            placeholder="— Assign intern —"
-          />
+          <FormField label="PIC (Intern)" value={form.pic} onChange={set("pic")} placeholder="Type intern name" />
           <FormField label="PIC Support" value={form.picSupport} onChange={set("picSupport")} placeholder="Supporting intern" />
           <SelectField
             label="Urgency" value={form.urgent} onChange={set("urgent")}
@@ -80,11 +77,7 @@ export function CampaignForm({ initial, mode, onSuccess }: CampaignFormProps) {
           />
           <FormField label="Revenue / Budget Size" value={form.revenueSize} onChange={set("revenueSize")} placeholder="e.g. RM 1,000 – RM 3,000" />
           <FormField label="Date Requested" type="date" value={form.dateRequest} onChange={set("dateRequest")} />
-          <SelectField
-            label="BD Name" value={form.bdName} onChange={set("bdName")}
-            options={BD_LIST.map((b) => ({ value: b, label: b }))}
-            placeholder="— Select BD —"
-          />
+          <FormField label="BD Name" value={form.bdName} onChange={set("bdName")} placeholder="Type BD name" />
           <FormField label="Agency Name" value={form.agencyName} onChange={set("agencyName")} placeholder="e.g. Rose Attractions – Zaim" />
           <FormField label="Campaign / Brand Name" required value={form.campaignName} onChange={set("campaignName")} placeholder="e.g. UGC Perfume" />
           <SelectField
@@ -92,6 +85,12 @@ export function CampaignForm({ initial, mode, onSuccess }: CampaignFormProps) {
             options={STAGE_OPTIONS.map((s) => ({ value: s, label: s }))}
             placeholder="— Select stage —"
           />
+          <SelectField
+            label="Status (Pipeline)" value={form.status} onChange={set("status")}
+            options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))}
+            placeholder="— Select status —"
+          />
+          <FormField label="Total Pax Required" type="number" value={form.totalPax} onChange={set("totalPax")} placeholder="e.g. 10" />
           <FormField label="Client Website / Reference" value={form.clientWebsite} onChange={set("clientWebsite")} placeholder="https://..." />
           <FormField label="Budget for Negotiation" value={form.budget} onChange={set("budget")} placeholder="e.g. RM 50 + product" />
           <FormField label="Timeline / Deadline" value={form.timeline} onChange={set("timeline")} placeholder="e.g. June 2026 / ASAP" />
@@ -144,6 +143,11 @@ export function CampaignForm({ initial, mode, onSuccess }: CampaignFormProps) {
           />
           <TextareaField
             label="Google Research Notes" value={form.googleResearch} onChange={set("googleResearch")}
+            rows={3} className="md:col-span-2"
+          />
+          <TextareaField
+            label="Special Remarks (BD ↔ Research)" value={form.specialRemarks} onChange={set("specialRemarks")}
+            placeholder="Notes between BD and research team"
             rows={3} className="md:col-span-2"
           />
         </div>

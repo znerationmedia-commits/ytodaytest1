@@ -1,5 +1,5 @@
 import type { Campaign, StageValue } from "./types";
-import { STAGE_OPTIONS } from "./constants";
+import { STAGE_OPTIONS, STATUS_RETENTION_DAYS, COMPLETED_STATUSES } from "./constants";
 
 export function formatDate(dateStr: string): string {
   if (!dateStr) return "—";
@@ -54,15 +54,48 @@ export function sortByDateDesc(campaigns: Campaign[]): Campaign[] {
   });
 }
 
+function daysSince(dateStr: string): number {
+  if (!dateStr) return Infinity;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return Infinity;
+  return Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Decides whether a campaign should still appear in the live pipeline
+ * based on its status and how long ago its statusUpdatedAt was.
+ */
+export function isInPipeline(c: Campaign): boolean {
+  const retention = STATUS_RETENTION_DAYS[c.status];
+  if (retention === undefined) return true; // always in pipeline
+  return daysSince(c.statusUpdatedAt) <= retention;
+}
+
+/**
+ * Campaigns marked complete/handover whose retention has expired.
+ * These go into the "Completed Projects" section.
+ */
+export function isCompleted(c: Campaign): boolean {
+  if (!COMPLETED_STATUSES.has(c.status)) return false;
+  const retention = STATUS_RETENTION_DAYS[c.status] ?? 0;
+  return daysSince(c.statusUpdatedAt) > retention;
+}
+
+export function paxProgress(c: Campaign, actual: number): { percent: number; required: number } {
+  const required = parseInt(c.totalPax) || 0;
+  if (required === 0) return { percent: 0, required: 0 };
+  return { percent: Math.round((actual / required) * 100), required };
+}
+
 export function filterCampaigns(
   campaigns: Campaign[],
   filters: { search: string; pic: string; stage: string; urgent: boolean; bdName: string }
 ): Campaign[] {
   return campaigns.filter((c) => {
-    if (filters.pic && c.pic !== filters.pic) return false;
+    if (filters.pic && !c.pic?.toLowerCase().includes(filters.pic.toLowerCase())) return false;
     if (filters.stage && c.stage !== filters.stage) return false;
     if (filters.urgent && c.urgent?.toLowerCase() !== "asap") return false;
-    if (filters.bdName && c.bdName !== filters.bdName) return false;
+    if (filters.bdName && !c.bdName?.toLowerCase().includes(filters.bdName.toLowerCase())) return false;
     if (filters.search) {
       const q = filters.search.toLowerCase();
       if (

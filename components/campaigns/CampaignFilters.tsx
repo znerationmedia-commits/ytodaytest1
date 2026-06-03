@@ -1,6 +1,6 @@
 "use client";
 import type { CampaignFilters } from "@/hooks/useCampaigns";
-import { STAGE_OPTIONS, PIC_LIST, BD_LIST } from "@/lib/constants";
+import { STAGE_OPTIONS } from "@/lib/constants";
 
 interface CampaignFiltersProps {
   filters: CampaignFilters;
@@ -22,14 +22,13 @@ export function CampaignFiltersBar({ filters, onChange }: CampaignFiltersProps) 
         onChange={(e) => set("search", e.target.value)}
         className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-52"
       />
-      <select
+      <input
+        type="text"
+        placeholder="Filter PIC…"
         value={filters.pic}
         onChange={(e) => set("pic", e.target.value)}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        <option value="">All PICs</option>
-        {PIC_LIST.map((p) => <option key={p} value={p}>{p}</option>)}
-      </select>
+        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-32"
+      />
       <select
         value={filters.stage}
         onChange={(e) => set("stage", e.target.value)}
@@ -38,14 +37,13 @@ export function CampaignFiltersBar({ filters, onChange }: CampaignFiltersProps) 
         <option value="">All Stages</option>
         {STAGE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
       </select>
-      <select
+      <input
+        type="text"
+        placeholder="Filter BD…"
         value={filters.bdName}
         onChange={(e) => set("bdName", e.target.value)}
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      >
-        <option value="">All BDs</option>
-        {BD_LIST.map((b) => <option key={b} value={b}>{b}</option>)}
-      </select>
+        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-32"
+      />
       <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
         <input
           type="checkbox"

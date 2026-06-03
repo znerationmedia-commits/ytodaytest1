@@ -8,6 +8,7 @@ import { CampaignMeta } from "@/components/campaign-detail/CampaignMeta";
 import { CampaignProgress } from "@/components/campaign-detail/CampaignProgress";
 import { CopywritingCard } from "@/components/campaign-detail/CopywritingCard";
 import { KolTable } from "@/components/campaign-detail/KolTable";
+import { KolQueries } from "@/components/campaign-detail/KolQueries";
 import { ToastContainer } from "@/components/ui/Toast";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
@@ -77,8 +78,8 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
 
       {/* Two-column info cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        <CampaignMeta campaign={campaign} onToast={showToast} onRefresh={refetch} />
-        <CampaignProgress campaign={campaign} />
+        <CampaignMeta campaign={campaign} kolList={kolList} onToast={showToast} onRefresh={refetch} />
+        <CampaignProgress campaign={campaign} onToast={showToast} onRefresh={refetch} />
       </div>
 
       {/* Copywriting card */}
@@ -109,12 +110,15 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
               <Spinner size="sm" /> Loading profiles...
             </div>
           ) : (
-            <KolTable
-              kols={kolList}
-              clientSheetLink={campaign.clientSheetLink}
-              onRefresh={handleKolRefresh}
-              onToast={showToast}
-            />
+            <div className="space-y-4">
+              <KolTable
+                kols={kolList}
+                clientSheetLink={campaign.clientSheetLink}
+                onRefresh={handleKolRefresh}
+                onToast={showToast}
+              />
+              <KolQueries kols={kolList} />
+            </div>
           )}
         </>
       )}

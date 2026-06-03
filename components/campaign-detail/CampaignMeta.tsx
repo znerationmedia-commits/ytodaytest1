@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
-import type { Campaign } from "@/lib/types";
+import type { Campaign, KolEntry } from "@/lib/types";
 import { StageBadge } from "@/components/campaigns/StageBadge";
 import { UrgencyBadge } from "@/components/campaigns/UrgencyBadge";
-import { formatDate } from "@/lib/utils";
+import { formatDate, paxProgress } from "@/lib/utils";
 import { updateCampaign } from "@/lib/api";
-import { PIC_LIST } from "@/lib/constants";
+import { PaxGauge } from "@/components/ui/PaxGauge";
 
 function Row({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
@@ -17,27 +17,34 @@ function Row({ label, value }: { label: string; value?: string }) {
   );
 }
 
-interface PicSelectProps {
+interface EditableTextProps {
   label: string;
   value: string;
+  placeholder?: string;
   rowIndex: number;
-  field: "pic" | "picSupport";
+  field: keyof Campaign;
   onSaved: (val: string) => void;
   onToast: (msg: string, type?: "success" | "error") => void;
+  type?: "text" | "number";
+  className?: string;
 }
 
-function PicSelect({ label, value, rowIndex, field, onSaved, onToast }: PicSelectProps) {
+/** Inline editable text input — saves on blur or Enter, ignores escape. */
+function EditableText({ label, value, placeholder, rowIndex, field, onSaved, onToast, type = "text", className }: EditableTextProps) {
+  const [val, setVal] = useState(value);
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
-  async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const val = e.target.value;
+  async function commit() {
+    if (!dirty) return;
     setSaving(true);
     try {
       await updateCampaign(rowIndex, { [field]: val });
       onSaved(val);
-      onToast(val ? `${label} assigned to ${val}` : `${label} cleared`);
+      onToast(`${label} saved`);
+      setDirty(false);
     } catch {
-      onToast(`Failed to update ${label}`, "error");
+      onToast(`Failed to save ${label}`, "error");
     } finally {
       setSaving(false);
     }
@@ -47,29 +54,18 @@ function PicSelect({ label, value, rowIndex, field, onSaved, onToast }: PicSelec
     <div>
       <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{label}</dt>
       <dd className="flex items-center gap-2">
-        <select
-          value={value}
-          onChange={handleChange}
+        <input
+          type={type}
+          value={val}
+          placeholder={placeholder}
+          onChange={(e) => { setVal(e.target.value); setDirty(true); }}
+          onBlur={commit}
+          onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
           disabled={saving}
-          className="text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50 min-w-[140px]"
-        >
-          <option value="">— Unassigned —</option>
-          {PIC_LIST.map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
-        {saving && (
-          <span className="text-xs text-gray-400 animate-pulse">Saving...</span>
-        )}
-        {!saving && value && (
-          <span className="inline-flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-medium">
-            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
-            {value}
-          </span>
-        )}
-        {!saving && !value && (
-          <span className="text-xs text-amber-600 font-medium">⚠ Needs assignment</span>
-        )}
+          className={`text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50 ${className ?? "flex-1"}`}
+        />
+        {saving && <span className="text-xs text-gray-400 animate-pulse">Saving…</span>}
+        {!saving && !val && <span className="text-xs text-amber-600 font-medium whitespace-nowrap">⚠ Empty</span>}
       </dd>
     </div>
   );
@@ -77,13 +73,19 @@ function PicSelect({ label, value, rowIndex, field, onSaved, onToast }: PicSelec
 
 interface CampaignMetaProps {
   campaign: Campaign;
+  kolList: KolEntry[];
   onToast: (msg: string, type?: "success" | "error") => void;
   onRefresh: () => void;
 }
 
-export function CampaignMeta({ campaign, onToast, onRefresh }: CampaignMetaProps) {
+export function CampaignMeta({ campaign, kolList, onToast }: CampaignMetaProps) {
   const [pic, setPic] = useState(campaign.pic);
   const [picSupport, setPicSupport] = useState(campaign.picSupport);
+  const [bdName, setBdName] = useState(campaign.bdName);
+  const [totalPax, setTotalPax] = useState(campaign.totalPax);
+
+  const actualPax = kolList.length;
+  const { percent, required } = paxProgress({ ...campaign, totalPax }, actualPax);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -98,28 +100,74 @@ export function CampaignMeta({ campaign, onToast, onRefresh }: CampaignMetaProps
         </div>
       </div>
 
-      <dl className="space-y-3">
-        {/* PIC Assignment — inline dropdowns */}
-        <div className="bg-gray-50 rounded-lg p-3 space-y-3 border border-gray-100">
-          <PicSelect
-            label="Assigned PIC"
-            value={pic}
-            rowIndex={campaign.rowIndex}
-            field="pic"
-            onSaved={setPic}
-            onToast={onToast}
-          />
-          <PicSelect
-            label="PIC Support"
-            value={picSupport}
-            rowIndex={campaign.rowIndex}
-            field="picSupport"
-            onSaved={setPicSupport}
-            onToast={onToast}
-          />
-        </div>
+      {/* Team assignment — free text */}
+      <div className="bg-gray-50 rounded-lg p-3 space-y-3 border border-gray-100 mb-4">
+        <EditableText
+          label="Assigned PIC (Intern)"
+          value={pic}
+          placeholder="Type intern name…"
+          rowIndex={campaign.rowIndex}
+          field="pic"
+          onSaved={setPic}
+          onToast={onToast}
+        />
+        <EditableText
+          label="PIC Support"
+          value={picSupport}
+          placeholder="Optional support intern"
+          rowIndex={campaign.rowIndex}
+          field="picSupport"
+          onSaved={setPicSupport}
+          onToast={onToast}
+        />
+        <EditableText
+          label="BD Name"
+          value={bdName}
+          placeholder="Type BD name…"
+          rowIndex={campaign.rowIndex}
+          field="bdName"
+          onSaved={setBdName}
+          onToast={onToast}
+        />
+      </div>
 
-        <Row label="BD Name" value={campaign.bdName} />
+      {/* Pax progress */}
+      <div className="bg-indigo-50/40 border border-indigo-100 rounded-lg p-4 mb-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Profile List Progress</h3>
+            <p className="text-xs text-gray-500 mb-3">
+              {actualPax} KOL{actualPax !== 1 ? "s" : ""} added of {required || "—"} required
+              {percent >= 100 && actualPax > required && (
+                <span className="ml-2 text-indigo-600 font-medium">+{actualPax - required} over target</span>
+              )}
+            </p>
+            <div>
+              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total Pax Required</dt>
+              <input
+                type="number"
+                value={totalPax}
+                placeholder="e.g. 10"
+                onChange={(e) => setTotalPax(e.target.value)}
+                onBlur={async () => {
+                  if (totalPax === campaign.totalPax) return;
+                  try {
+                    await updateCampaign(campaign.rowIndex, { totalPax });
+                    onToast("Total pax saved");
+                  } catch {
+                    onToast("Failed to save total pax", "error");
+                  }
+                }}
+                onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                className="w-28 text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+            </div>
+          </div>
+          <PaxGauge actual={actualPax} required={required} />
+        </div>
+      </div>
+
+      <dl className="space-y-3">
         <Row label="Date Requested" value={formatDate(campaign.dateRequest)} />
         <Row label="Timeline" value={campaign.timeline} />
         <Row label="Budget" value={campaign.budget} />

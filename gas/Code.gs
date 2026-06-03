@@ -1,9 +1,9 @@
 // ─── CONFIGURATION ────────────────────────────────────────────────────────────
 // Replace with your Research Progress & OT spreadsheet ID
-var RESEARCH_SPREADSHEET_ID = "1qj-OvVKl5hVEu-CX0rkPAEkL8bj33J_0I2sqDqAHqs4";
+var RESEARCH_SPREADSHEET_ID = "17vSZp9TwEj3R9pQjY62qOblC1BG8RpTYY1ecX8OkAEs";
 var RESEARCH_SHEET_NAME = "2025";
 var DATA_START_ROW = 4; // rows 1-3 are headers
-var TOTAL_COLS = 28;    // columns A through AB
+var TOTAL_COLS = 32;    // columns A through AF (adds Status AC, Special Remarks AD, Total Pax AE, Status Updated At AF)
 
 // ─── ENTRY POINTS ─────────────────────────────────────────────────────────────
 
@@ -105,7 +105,11 @@ function rowToCampaign(row, rowIndex) {
     fbGroupPosted: String(row[23] || ""),
     ytAdminContact: String(row[24] || ""),
     googleResearch: String(row[25] || ""),
-    heepsyContact: String(row[26] || "")
+    heepsyContact: String(row[26] || ""),
+    status: String(row[28] || ""),
+    specialRemarks: String(row[29] || ""),
+    totalPax: String(row[30] || ""),
+    statusUpdatedAt: formatDateValue(row[31])
   };
 }
 
@@ -164,7 +168,11 @@ function createCampaign(data) {
     data.ytAdminContact || "",
     data.googleResearch || "",
     data.heepsyContact || "",
-    ""                         // col 28 (AB) unused
+    "",                        // col 28 (AB) unused
+    data.status || "Request Assign",
+    data.specialRemarks || "",
+    data.totalPax || "",
+    new Date()                 // col 32 (AF) statusUpdatedAt
   ];
   sheet.appendRow(newRow);
   return { rowIndex: sheet.getLastRow() };
@@ -179,12 +187,17 @@ function updateCampaign(rowIndex, data) {
     clientSheetLink: 16, ytUniqueLink: 17, ytAdminLink: 18,
     internalSheet: 19, copywriting: 20, zynnApproval: 21, telegramPosted: 22,
     emailBlasted: 23, fbGroupPosted: 24, ytAdminContact: 25, googleResearch: 26,
-    heepsyContact: 27
+    heepsyContact: 27,
+    status: 29, specialRemarks: 30, totalPax: 31, statusUpdatedAt: 32
   };
   for (var key in data) {
     if (colMap[key]) {
       sheet.getRange(rowIndex, colMap[key]).setValue(data[key]);
     }
+  }
+  // Auto-stamp statusUpdatedAt whenever status changes (unless explicitly provided)
+  if (data.status !== undefined && data.statusUpdatedAt === undefined) {
+    sheet.getRange(rowIndex, 32).setValue(new Date());
   }
 }
 

@@ -101,8 +101,8 @@ export function KolTable({ kols, clientSheetLink, onRefresh, onToast }: KolTable
                 <th className="text-left px-4 py-2.5 font-medium text-gray-600">Followers</th>
                 <th className="text-left px-4 py-2.5 font-medium text-gray-600">Interest (Client)</th>
                 <th className="text-left px-4 py-2.5 font-medium text-gray-600">Interest (KOL)</th>
-                <th className="text-left px-4 py-2.5 font-medium text-gray-600">YT Remarks</th>
-                <th className="text-left px-4 py-2.5 font-medium text-gray-600">Client Remarks</th>
+                <th className="text-left px-4 py-2.5 font-medium text-gray-600">Internal Remark (G)</th>
+                <th className="text-left px-4 py-2.5 font-medium text-gray-600">KOL Queries (H)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">

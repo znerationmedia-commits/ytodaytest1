@@ -1,7 +1,16 @@
 export type StageValue =
-  | "Sample Profile"
-  | "Interest Check (pitching)"
-  | "Interest Check (confirmed)"
+  | "Sample Profile (Pitching)"
+  | "Sample Profile & Soft Interest Check (Pitching)"
+  | "Sample Profile & Soft Interest Check (Nearly Confirmed)"
+  | "Interest Check (Confirmed)"
+  | "";
+
+export type StatusValue =
+  | "Request Assign"
+  | "Done Reach Out"
+  | "Client Approve Project - Handover to Operations"
+  | "Done Remark and Complete"
+  | "Client Cancel Project"
   | "";
 
 export interface Campaign {
@@ -33,6 +42,10 @@ export interface Campaign {
   ytAdminContact: string;
   googleResearch: string;
   heepsyContact: string;
+  status: StatusValue;
+  specialRemarks: string;
+  totalPax: string;
+  statusUpdatedAt: string;
 }
 
 export interface KolEntry {
