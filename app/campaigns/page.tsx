@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { CampaignTable } from "@/components/campaigns/CampaignTable";
 import { CampaignFiltersBar } from "@/components/campaigns/CampaignFilters";
-import { PICCompleted } from "@/components/dashboard/PICCompleted";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 
@@ -83,11 +82,6 @@ export default function CampaignsPage() {
           emptyDescription="No campaigns are waiting for PIC assignment."
         />
       )}
-
-      {/* All-time PIC completion tally — shown on both tabs as a team scoreboard */}
-      <div className="mt-8">
-        <PICCompleted campaigns={assigned} />
-      </div>
     </>
   );
 }
