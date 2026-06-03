@@ -38,6 +38,7 @@ export function CampaignTable({ campaigns, emptyTitle = "No campaigns", emptyDes
             <th className="text-left px-4 py-3 font-medium text-gray-600 w-8">#</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Campaign</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">PIC</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-600">BD</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Stage</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600 w-24">Pax</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Urgency</th>
@@ -57,6 +58,9 @@ export function CampaignTable({ campaigns, emptyTitle = "No campaigns", emptyDes
               <td className="px-4 py-3">
                 <div className="text-gray-700">{c.pic || <span className="text-gray-400 italic text-xs">Unassigned</span>}</div>
                 {c.picSupport && <div className="text-xs text-gray-400">{c.picSupport}</div>}
+              </td>
+              <td className="px-4 py-3">
+                <div className="text-gray-700 text-sm">{c.bdName?.trim() || <span className="text-gray-400 italic text-xs">—</span>}</div>
               </td>
               <td className="px-4 py-3"><StageBadge stage={c.stage} /></td>
               <td className="px-4 py-3">
