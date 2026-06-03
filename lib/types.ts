@@ -8,6 +8,7 @@ export type StageValue =
 export type StatusValue =
   | "Request Assign"
   | "Done Reach Out"
+  | "Client Feedback to Continue"
   | "Client Approve Project - Handover to Operations"
   | "Done Remark and Complete"
   | "Client Cancel Project"

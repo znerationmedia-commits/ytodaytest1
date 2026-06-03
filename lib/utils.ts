@@ -62,6 +62,19 @@ function daysSince(dateStr: string): number {
 }
 
 /**
+ * Was the campaign requested within the last N months?
+ * Used to keep PIC workload focused on recent work.
+ */
+export function isWithinMonths(c: Campaign, months: number): boolean {
+  if (!c.dateRequest) return false;
+  const d = new Date(c.dateRequest);
+  if (isNaN(d.getTime())) return false;
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - months);
+  return d.getTime() >= cutoff.getTime();
+}
+
+/**
  * Decides whether a campaign should still appear in the live pipeline
  * based on its status and how long ago its statusUpdatedAt was.
  */

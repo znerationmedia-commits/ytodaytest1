@@ -8,6 +8,7 @@ export const STAGE_OPTIONS = [
 export const STATUS_OPTIONS = [
   "Request Assign",
   "Done Reach Out",
+  "Client Feedback to Continue",
   "Client Approve Project - Handover to Operations",
   "Done Remark and Complete",
   "Client Cancel Project",
@@ -56,6 +57,7 @@ export const STAGE_DOT_COLORS: Record<string, string> = {
 export const STATUS_COLORS: Record<string, string> = {
   "Request Assign": "bg-red-100 text-red-700 border-red-200",
   "Done Reach Out": "bg-emerald-100 text-emerald-700 border-emerald-200",
+  "Client Feedback to Continue": "bg-yellow-100 text-yellow-700 border-yellow-200",
   "Client Approve Project - Handover to Operations": "bg-blue-100 text-blue-700 border-blue-200",
   "Done Remark and Complete": "bg-teal-100 text-teal-700 border-teal-200",
   "Client Cancel Project": "bg-rose-100 text-rose-700 border-rose-200",

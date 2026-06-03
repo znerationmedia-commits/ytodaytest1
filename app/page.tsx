@@ -7,9 +7,15 @@ import { updateCampaign } from "@/lib/api";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PipelineSection } from "@/components/dashboard/PipelineSection";
 import { CompletedProjects } from "@/components/dashboard/CompletedProjects";
+import { PICWorkload } from "@/components/dashboard/PICWorkload";
 import { ToastContainer } from "@/components/ui/Toast";
 import { Spinner } from "@/components/ui/Spinner";
 import { isInPipeline, isCompleted } from "@/lib/utils";
+
+const WORKLOAD_ACTIVE_STATUSES = new Set([
+  "Request Assign",
+  "Client Feedback to Continue",
+]);
 import type { Campaign } from "@/lib/types";
 
 export default function HomePage() {
@@ -21,6 +27,11 @@ export default function HomePage() {
   const pipeline = assigned.filter(isInPipeline);
   const completed = assigned.filter(isCompleted);
   const urgent = pipeline.filter((c) => c.urgent?.toLowerCase() === "asap");
+
+  // Workload = active statuses (Request Assign / Done Reach Out / Client Feedback).
+  // No date cutoff — a campaign stays on the PIC's plate until they actively move
+  // its status forward to Handover / Complete / Cancel.
+  const workloadCampaigns = assigned.filter((c) => WORKLOAD_ACTIVE_STATUSES.has(c.status));
 
   async function handleAssign(c: Campaign, picName: string) {
     if (!picName.trim()) return;
@@ -98,6 +109,11 @@ export default function HomePage() {
       {/* Pipeline by status */}
       <div className="mb-6">
         <PipelineSection campaigns={pipeline} />
+      </div>
+
+      {/* PIC Workload */}
+      <div className="mb-6">
+        <PICWorkload campaigns={workloadCampaigns} />
       </div>
 
       {/* Completed projects */}

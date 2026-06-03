@@ -1,57 +1,49 @@
 "use client";
-import Link from "next/link";
 import type { Campaign } from "@/lib/types";
 
-// Statuses that count toward "active workload" — actions the PIC still owes
-// (either kicking off, or chasing client decisions). Excludes Done Reach Out,
-// Handover, Complete, and Cancel — those are no longer requiring action.
-const ACTIVE_STATUSES = [
-  "Request Assign",
-  "Client Feedback to Continue",
+// Statuses that count as a "done" outcome from the research team's side.
+const COMPLETED_STATUSES = [
+  "Client Approve Project - Handover to Operations",
+  "Done Remark and Complete",
 ] as const;
 
-type ActiveStatus = typeof ACTIVE_STATUSES[number];
+type CompletedStatus = typeof COMPLETED_STATUSES[number];
 
-const STATUS_STYLES: Record<ActiveStatus, { dot: string; chip: string; barFill: string; label: string }> = {
-  "Request Assign": {
-    dot: "bg-red-500",
-    chip: "bg-red-50 text-red-700 border-red-200",
-    barFill: "bg-red-400",
-    label: "Request Assign",
+const STATUS_STYLES: Record<CompletedStatus, { dot: string; chip: string; barFill: string; label: string }> = {
+  "Client Approve Project - Handover to Operations": {
+    dot: "bg-blue-500",
+    chip: "bg-blue-50 text-blue-700 border-blue-200",
+    barFill: "bg-blue-400",
+    label: "Handover",
   },
-  "Client Feedback to Continue": {
-    dot: "bg-yellow-500",
-    chip: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    barFill: "bg-yellow-400",
-    label: "Client Feedback",
+  "Done Remark and Complete": {
+    dot: "bg-teal-500",
+    chip: "bg-teal-50 text-teal-700 border-teal-200",
+    barFill: "bg-teal-400",
+    label: "Done & Complete",
   },
 };
 
-interface PICWorkloadProps {
-  /**
-   * Campaigns already filtered to "active statuses" by the parent
-   * (Request Assign / Done Reach Out / Client Feedback). No date cutoff —
-   * a campaign sits on the PIC's plate until its status moves forward.
-   */
+interface PICCompletedProps {
+  /** All assigned campaigns — this component filters down internally. */
   campaigns: Campaign[];
 }
 
-export function PICWorkload({ campaigns }: PICWorkloadProps) {
-  // Group by PIC → status counts
-  type PicRow = { pic: string; total: number } & Record<ActiveStatus, number>;
+export function PICCompleted({ campaigns }: PICCompletedProps) {
+  type PicRow = { pic: string; total: number } & Record<CompletedStatus, number>;
   const map = new Map<string, PicRow>();
 
   for (const c of campaigns) {
+    if (!COMPLETED_STATUSES.includes(c.status as CompletedStatus)) continue;
     const pic = (c.pic || "Unassigned").trim() || "Unassigned";
-    if (!ACTIVE_STATUSES.includes(c.status as ActiveStatus)) continue;
-    const status = c.status as ActiveStatus;
+    const status = c.status as CompletedStatus;
 
     if (!map.has(pic)) {
       map.set(pic, {
         pic,
         total: 0,
-        "Request Assign": 0,
-        "Client Feedback to Continue": 0,
+        "Client Approve Project - Handover to Operations": 0,
+        "Done Remark and Complete": 0,
       });
     }
     const row = map.get(pic)!;
@@ -61,32 +53,32 @@ export function PICWorkload({ campaigns }: PICWorkloadProps) {
 
   const rows = Array.from(map.values()).sort((a, b) => b.total - a.total);
   const maxTotal = Math.max(...rows.map((r) => r.total), 1);
-
-  // Totals across the team
   const teamTotal = rows.reduce((s, r) => s + r.total, 0);
   const teamByStatus = {
-    "Request Assign": rows.reduce((s, r) => s + r["Request Assign"], 0),
-    "Client Feedback to Continue": rows.reduce((s, r) => s + r["Client Feedback to Continue"], 0),
+    "Client Approve Project - Handover to Operations": rows.reduce(
+      (s, r) => s + r["Client Approve Project - Handover to Operations"],
+      0
+    ),
+    "Done Remark and Complete": rows.reduce((s, r) => s + r["Done Remark and Complete"], 0),
   };
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-base font-semibold text-gray-900">PIC Workload</h3>
+          <h3 className="text-base font-semibold text-gray-900">Completed Campaigns by PIC</h3>
           <p className="text-xs text-gray-400 mt-0.5">
-            Outstanding action per intern · Request Assign + Client Feedback (stays until moved forward)
+            All-time tally of campaigns each intern carried to handover or completion
           </p>
         </div>
         <div className="text-right flex-shrink-0">
           <div className="text-2xl font-bold text-gray-900 leading-none">{teamTotal}</div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide mt-1">Active total</div>
+          <div className="text-[10px] text-gray-400 uppercase tracking-wide mt-1">Total done</div>
         </div>
       </div>
 
-      {/* Team-wide breakdown chips */}
       <div className="flex flex-wrap gap-2 mb-5 pb-4 border-b border-gray-100">
-        {ACTIVE_STATUSES.map((s) => {
+        {COMPLETED_STATUSES.map((s) => {
           const styles = STATUS_STYLES[s];
           return (
             <div key={s} className={`inline-flex items-center gap-2 text-xs font-medium px-2.5 py-1 rounded-full border ${styles.chip}`}>
@@ -100,7 +92,7 @@ export function PICWorkload({ campaigns }: PICWorkloadProps) {
 
       {rows.length === 0 ? (
         <p className="text-sm text-gray-400 italic py-4 text-center">
-          No active campaigns right now.
+          No campaigns marked Handover or Done & Complete yet.
         </p>
       ) : (
         <ul className="space-y-3">
@@ -108,20 +100,19 @@ export function PICWorkload({ campaigns }: PICWorkloadProps) {
             <li key={r.pic}>
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">
+                  <span className="w-7 h-7 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold">
                     {r.pic.slice(0, 1).toUpperCase()}
                   </span>
                   <span className="text-sm font-medium text-gray-900">{r.pic}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-gray-900">{r.total}</span>
-                  <span className="text-[10px] text-gray-400 uppercase">active</span>
+                  <span className="text-[10px] text-gray-400 uppercase">done</span>
                 </div>
               </div>
 
-              {/* Stacked bar */}
               <div className="flex h-2 rounded-full bg-gray-100 overflow-hidden mb-1.5">
-                {ACTIVE_STATUSES.map((s) => {
+                {COMPLETED_STATUSES.map((s) => {
                   const pct = (r[s] / maxTotal) * 100;
                   if (pct === 0) return null;
                   return (
@@ -135,9 +126,8 @@ export function PICWorkload({ campaigns }: PICWorkloadProps) {
                 })}
               </div>
 
-              {/* Per-status counts */}
               <div className="flex flex-wrap gap-1.5">
-                {ACTIVE_STATUSES.map((s) => {
+                {COMPLETED_STATUSES.map((s) => {
                   if (r[s] === 0) return null;
                   return (
                     <span
@@ -154,12 +144,6 @@ export function PICWorkload({ campaigns }: PICWorkloadProps) {
           ))}
         </ul>
       )}
-
-      <div className="mt-4 pt-3 border-t border-gray-100 text-right">
-        <Link href="/campaigns" className="text-xs text-indigo-600 hover:underline">
-          View all campaigns →
-        </Link>
-      </div>
     </div>
   );
 }

@@ -17,6 +17,11 @@ const COLUMN_STYLES: Record<string, { header: string; chip: string; accent: stri
     chip: "bg-emerald-100 text-emerald-700",
     accent: "border-t-emerald-400",
   },
+  "Client Feedback to Continue": {
+    header: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    chip: "bg-yellow-100 text-yellow-700",
+    accent: "border-t-yellow-400",
+  },
   "Client Approve Project - Handover to Operations": {
     header: "bg-blue-50 text-blue-700 border-blue-200",
     chip: "bg-blue-100 text-blue-700",
@@ -38,6 +43,7 @@ const COLUMN_STYLES: Record<string, { header: string; chip: string; accent: stri
 const COLUMN_LABELS: Record<string, string> = {
   "Request Assign": "Request Assign",
   "Done Reach Out": "Done Reach Out",
+  "Client Feedback to Continue": "Client Feedback → Continue",
   "Client Approve Project - Handover to Operations": "Client Approved → Handover",
   "Done Remark and Complete": "Done & Complete",
   "Client Cancel Project": "Cancelled",
