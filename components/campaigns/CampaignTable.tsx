@@ -3,8 +3,9 @@ import Link from "next/link";
 import type { Campaign } from "@/lib/types";
 import { StageBadge } from "./StageBadge";
 import { UrgencyBadge } from "./UrgencyBadge";
-import { formatDate } from "@/lib/utils";
+import { formatDate, paxProgress } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PaxGauge } from "@/components/ui/PaxGauge";
 
 interface CampaignTableProps {
   campaigns: Campaign[];
@@ -38,6 +39,7 @@ export function CampaignTable({ campaigns, emptyTitle = "No campaigns", emptyDes
             <th className="text-left px-4 py-3 font-medium text-gray-600">Campaign</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">PIC</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Stage</th>
+            <th className="text-left px-4 py-3 font-medium text-gray-600 w-24">Pax</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Urgency</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Budget</th>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Date</th>
@@ -57,6 +59,18 @@ export function CampaignTable({ campaigns, emptyTitle = "No campaigns", emptyDes
                 {c.picSupport && <div className="text-xs text-gray-400">{c.picSupport}</div>}
               </td>
               <td className="px-4 py-3"><StageBadge stage={c.stage} /></td>
+              <td className="px-4 py-3">
+                {(() => {
+                  const { required, actual } = paxProgress(c);
+                  if (required === 0) return <span className="text-xs text-gray-400 italic">—</span>;
+                  return (
+                    <div className="flex items-center gap-2">
+                      <PaxGauge actual={actual} required={required} size={40} />
+                      <span className="text-[10px] text-gray-500 whitespace-nowrap">{actual}/{required}</span>
+                    </div>
+                  );
+                })()}
+              </td>
               <td className="px-4 py-3"><UrgencyBadge urgent={c.urgent} /></td>
               <td className="px-4 py-3 text-gray-600 text-xs max-w-[140px] truncate">{c.revenueSize || "—"}</td>
               <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{formatDate(c.dateRequest)}</td>

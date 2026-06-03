@@ -22,7 +22,7 @@ export function useCampaign(rowIndex: number) {
         if (id) {
           setKolLoading(true);
           try {
-            const kols = await getKolList(id);
+            const kols = await getKolList(id, rowIndex);
             setKolList(kols);
           } catch {
             setKolList([]);
@@ -47,12 +47,12 @@ export function useCampaign(rowIndex: number) {
     if (!id) return;
     setKolLoading(true);
     try {
-      const kols = await getKolList(id);
+      const kols = await getKolList(id, rowIndex);
       setKolList(kols);
     } finally {
       setKolLoading(false);
     }
-  }, []);
+  }, [rowIndex]);
 
   return { campaign, kolList, loading, kolLoading, error, refetch: fetchCampaign, refetchKols };
 }

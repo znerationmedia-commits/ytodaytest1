@@ -46,6 +46,7 @@ export interface Campaign {
   specialRemarks: string;
   totalPax: string;
   statusUpdatedAt: string;
+  filledPax: string;
 }
 
 export interface KolEntry {

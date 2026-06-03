@@ -27,11 +27,6 @@ export const COMPLETED_STATUSES = new Set([
   "Done Remark and Complete",
 ]);
 
-// Legacy defaults for the settings page (used as initial seed values only —
-// names are now typed freely on the campaign forms).
-export const PIC_LIST = ["Zi Jian", "YiChing", "Randall", "SimYee"] as const;
-export const BD_LIST = ["WanCi", "Shirley"] as const;
-
 export const URGENCY_OPTIONS = ["ASAP", "Can take time"] as const;
 
 export const INTEREST_OPTIONS = ["YES", "NO", ""] as const;

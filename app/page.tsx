@@ -87,14 +87,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Urgent */}
-      {urgent.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-6">
-          <span className="text-red-600 font-semibold text-sm">⚡ {urgent.length} ASAP: </span>
-          <span className="text-red-500 text-sm">{urgent.map((c) => c.campaignName).join(", ")}</span>
-        </div>
-      )}
-
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <StatCard label="In Pipeline" value={pipeline.length} color="indigo" />

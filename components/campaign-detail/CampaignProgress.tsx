@@ -47,11 +47,11 @@ export function CampaignProgress({ campaign, onToast, onRefresh }: CampaignProgr
   const [savingRemarks, setSavingRemarks] = useState(false);
 
   async function handleStatusChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const val = e.target.value;
+    const val = e.target.value as Campaign["status"];
     setSavingStatus(true);
     try {
       await updateCampaign(campaign.rowIndex, { status: val });
-      setStatus(val as Campaign["status"]);
+      setStatus(val);
       onToast(`Status updated → ${val || "—"}`);
       onRefresh();
     } catch {
@@ -62,11 +62,11 @@ export function CampaignProgress({ campaign, onToast, onRefresh }: CampaignProgr
   }
 
   async function handleStageChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const val = e.target.value;
+    const val = e.target.value as Campaign["stage"];
     setSavingStage(true);
     try {
       await updateCampaign(campaign.rowIndex, { stage: val });
-      setStage(val as Campaign["stage"]);
+      setStage(val);
       onToast(`Stage updated → ${val || "—"}`);
     } catch {
       onToast("Failed to update stage", "error");

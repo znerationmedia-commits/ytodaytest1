@@ -81,10 +81,16 @@ export function isCompleted(c: Campaign): boolean {
   return daysSince(c.statusUpdatedAt) > retention;
 }
 
-export function paxProgress(c: Campaign, actual: number): { percent: number; required: number } {
+/**
+ * Pax progress derived from the campaign row.
+ * - actual: prefer the live kolList count if provided, else the stored filledPax.
+ * - required: from totalPax column on the research sheet.
+ */
+export function paxProgress(c: Campaign, actualOverride?: number): { percent: number; required: number; actual: number } {
   const required = parseInt(c.totalPax) || 0;
-  if (required === 0) return { percent: 0, required: 0 };
-  return { percent: Math.round((actual / required) * 100), required };
+  const actual = actualOverride !== undefined ? actualOverride : (parseInt(c.filledPax) || 0);
+  if (required === 0) return { percent: 0, required: 0, actual };
+  return { percent: Math.round((actual / required) * 100), required, actual };
 }
 
 export function filterCampaigns(

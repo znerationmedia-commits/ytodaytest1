@@ -24,7 +24,7 @@ const empty: FormData = {
   clientSheetLink: "", ytUniqueLink: "", ytAdminLink: "",
   internalSheet: "", copywriting: "", zynnApproval: "", telegramPosted: "",
   emailBlasted: "", fbGroupPosted: "", ytAdminContact: "", googleResearch: "", heepsyContact: "",
-  status: "Request Assign", specialRemarks: "", totalPax: "", statusUpdatedAt: "",
+  status: "Request Assign", specialRemarks: "", totalPax: "", statusUpdatedAt: "", filledPax: "0",
 };
 
 export function CampaignForm({ initial, mode, onSuccess }: CampaignFormProps) {

@@ -39,7 +39,7 @@ function EditableText({ label, value, placeholder, rowIndex, field, onSaved, onT
     if (!dirty) return;
     setSaving(true);
     try {
-      await updateCampaign(rowIndex, { [field]: val });
+      await updateCampaign(rowIndex, { [field]: val } as Partial<Campaign>);
       onSaved(val);
       onToast(`${label} saved`);
       setDirty(false);
@@ -85,7 +85,7 @@ export function CampaignMeta({ campaign, kolList, onToast }: CampaignMetaProps) 
   const [totalPax, setTotalPax] = useState(campaign.totalPax);
 
   const actualPax = kolList.length;
-  const { percent, required } = paxProgress({ ...campaign, totalPax }, actualPax);
+  const { percent, required } = paxProgress({ ...campaign, totalPax, filledPax: String(actualPax) }, actualPax);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5">

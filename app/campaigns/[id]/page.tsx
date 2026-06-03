@@ -114,6 +114,7 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
               <KolTable
                 kols={kolList}
                 clientSheetLink={campaign.clientSheetLink}
+                campaignRowIndex={rowIndex}
                 onRefresh={handleKolRefresh}
                 onToast={showToast}
               />

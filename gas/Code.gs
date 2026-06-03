@@ -3,7 +3,7 @@
 var RESEARCH_SPREADSHEET_ID = "17vSZp9TwEj3R9pQjY62qOblC1BG8RpTYY1ecX8OkAEs";
 var RESEARCH_SHEET_NAME = "2025";
 var DATA_START_ROW = 4; // rows 1-3 are headers
-var TOTAL_COLS = 32;    // columns A through AF (adds Status AC, Special Remarks AD, Total Pax AE, Status Updated At AF)
+var TOTAL_COLS = 33;    // columns A through AG (adds Status AC, Special Remarks AD, Total Pax AE, Status Updated At AF, Filled Pax AG)
 
 // ─── ENTRY POINTS ─────────────────────────────────────────────────────────────
 
@@ -16,7 +16,7 @@ function doGet(e) {
     } else if (action === "getCampaign") {
       data = getCampaignByRow(parseInt(e.parameter.rowIndex));
     } else if (action === "getKolList") {
-      data = getKolList(e.parameter.clientSheetId);
+      data = getKolList(e.parameter.clientSheetId, e.parameter.campaignRowIndex);
     } else if (action === "getSettings") {
       data = getSettings();
     } else {
@@ -41,7 +41,7 @@ function doPost(e) {
     } else if (action === "createClientSheet") {
       data = createClientSheet(payload.campaignName, payload.rowIndex);
     } else if (action === "addKolEntry") {
-      data = addKolEntry(payload.clientSheetId, payload.data);
+      data = addKolEntry(payload.clientSheetId, payload.data, payload.campaignRowIndex);
     } else if (action === "updateKolEntry") {
       updateKolEntry(payload.clientSheetId, payload.rowIndex, payload.data);
     } else if (action === "updateSettings") {
@@ -109,7 +109,8 @@ function rowToCampaign(row, rowIndex) {
     status: String(row[28] || ""),
     specialRemarks: String(row[29] || ""),
     totalPax: String(row[30] || ""),
-    statusUpdatedAt: formatDateValue(row[31])
+    statusUpdatedAt: formatDateValue(row[31]),
+    filledPax: String(row[32] || "0")
   };
 }
 
@@ -172,7 +173,8 @@ function createCampaign(data) {
     data.status || "Request Assign",
     data.specialRemarks || "",
     data.totalPax || "",
-    new Date()                 // col 32 (AF) statusUpdatedAt
+    new Date(),                // col 32 (AF) statusUpdatedAt
+    0                          // col 33 (AG) filledPax
   ];
   sheet.appendRow(newRow);
   return { rowIndex: sheet.getLastRow() };
@@ -188,7 +190,7 @@ function updateCampaign(rowIndex, data) {
     internalSheet: 19, copywriting: 20, zynnApproval: 21, telegramPosted: 22,
     emailBlasted: 23, fbGroupPosted: 24, ytAdminContact: 25, googleResearch: 26,
     heepsyContact: 27,
-    status: 29, specialRemarks: 30, totalPax: 31, statusUpdatedAt: 32
+    status: 29, specialRemarks: 30, totalPax: 31, statusUpdatedAt: 32, filledPax: 33
   };
   for (var key in data) {
     if (colMap[key]) {
@@ -256,36 +258,43 @@ function createClientSheet(campaignName, campaignRowIndex) {
   return { url: url };
 }
 
-function getKolList(clientSheetId) {
+function getKolList(clientSheetId, campaignRowIndex) {
   var ss = SpreadsheetApp.openById(clientSheetId);
   var sheet = ss.getSheets()[0];
   var lastRow = sheet.getLastRow();
-  if (lastRow <= 1) return [];
-  var data = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
   var results = [];
-  for (var i = 0; i < data.length; i++) {
-    var row = data[i];
-    if (!String(row[1] || "").trim()) continue; // skip blank name rows
-    results.push({
-      rowIndex: i + 2,
-      no: String(row[0] || ""),
-      name: String(row[1] || ""),
-      profileLink: String(row[2] || ""),
-      followers: String(row[3] || ""),
-      interestCheckClient: String(row[4] || ""),
-      interestCheckKol: String(row[5] || ""),
-      ytRemarks: String(row[6] || ""),
-      clientRemarks: String(row[7] || "")
-    });
+  if (lastRow > 1) {
+    var data = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
+    for (var i = 0; i < data.length; i++) {
+      var row = data[i];
+      if (!String(row[1] || "").trim()) continue;
+      results.push({
+        rowIndex: i + 2,
+        no: String(row[0] || ""),
+        name: String(row[1] || ""),
+        profileLink: String(row[2] || ""),
+        followers: String(row[3] || ""),
+        interestCheckClient: String(row[4] || ""),
+        interestCheckKol: String(row[5] || ""),
+        ytRemarks: String(row[6] || ""),
+        clientRemarks: String(row[7] || "")
+      });
+    }
+  }
+  // Persist filled-pax count to research sheet (col AG = 33) for fast dashboard rendering.
+  if (campaignRowIndex) {
+    try {
+      getResearchSheet().getRange(parseInt(campaignRowIndex), 33).setValue(results.length);
+    } catch (e) { /* ignore */ }
   }
   return results;
 }
 
-function addKolEntry(clientSheetId, data) {
+function addKolEntry(clientSheetId, data, campaignRowIndex) {
   var ss = SpreadsheetApp.openById(clientSheetId);
   var sheet = ss.getSheets()[0];
   var lastRow = sheet.getLastRow();
-  var nextNo = lastRow; // header is row 1, so nextNo = lastRow (rows below header)
+  var nextNo = lastRow;
   sheet.appendRow([
     nextNo,
     data.name || "",
@@ -296,6 +305,14 @@ function addKolEntry(clientSheetId, data) {
     data.ytRemarks || "",
     data.clientRemarks || ""
   ]);
+  // Increment filled-pax counter on the research sheet.
+  if (campaignRowIndex) {
+    try {
+      var cell = getResearchSheet().getRange(parseInt(campaignRowIndex), 33);
+      var current = parseInt(cell.getValue()) || 0;
+      cell.setValue(current + 1);
+    } catch (e) { /* ignore */ }
+  }
   return { rowIndex: sheet.getLastRow() };
 }
 

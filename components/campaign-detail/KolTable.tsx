@@ -11,6 +11,7 @@ import { extractSheetId } from "@/lib/utils";
 interface KolTableProps {
   kols: KolEntry[];
   clientSheetLink: string;
+  campaignRowIndex: number;
   onRefresh: () => void;
   onToast: (msg: string, type?: "success" | "error") => void;
 }
@@ -33,7 +34,7 @@ function InterestSelect({ value, onChange }: { value: string; onChange: (v: stri
   );
 }
 
-export function KolTable({ kols, clientSheetLink, onRefresh, onToast }: KolTableProps) {
+export function KolTable({ kols, clientSheetLink, campaignRowIndex, onRefresh, onToast }: KolTableProps) {
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState<number | null>(null);
   const sheetId = extractSheetId(clientSheetLink);
@@ -58,7 +59,7 @@ export function KolTable({ kols, clientSheetLink, onRefresh, onToast }: KolTable
         `Please open the campaign, check that the Client Sheet link in column Q is a valid Google Sheets URL, then try again.\n\nStored value: "${clientSheetLink}"`
       );
     }
-    await addKolEntry(sheetId, data);
+    await addKolEntry(sheetId, data, campaignRowIndex);
     setShowAdd(false);
     onRefresh();
     onToast("KOL added successfully");

@@ -28,8 +28,10 @@ export async function getCampaign(rowIndex: number): Promise<Campaign> {
   return gasGet<Campaign>("getCampaign", { rowIndex: String(rowIndex) });
 }
 
-export async function getKolList(clientSheetId: string): Promise<KolEntry[]> {
-  return gasGet<KolEntry[]>("getKolList", { clientSheetId });
+export async function getKolList(clientSheetId: string, campaignRowIndex?: number): Promise<KolEntry[]> {
+  const params: Record<string, string> = { clientSheetId };
+  if (campaignRowIndex !== undefined) params.campaignRowIndex = String(campaignRowIndex);
+  return gasGet<KolEntry[]>("getKolList", params);
 }
 
 export async function createCampaign(
@@ -54,17 +56,10 @@ export async function createClientSheet(
 
 export async function addKolEntry(
   clientSheetId: string,
-  data: Omit<KolEntry, "rowIndex" | "no">
+  data: Omit<KolEntry, "rowIndex" | "no">,
+  campaignRowIndex?: number
 ): Promise<{ rowIndex: number }> {
-  return gasPost<{ rowIndex: number }>("addKolEntry", { clientSheetId, data });
-}
-
-export async function getSettings(): Promise<{ picList: string[]; bdList: string[] }> {
-  return gasGet("getSettings");
-}
-
-export async function updateSettings(data: { picList?: string[]; bdList?: string[] }): Promise<void> {
-  return gasPost("updateSettings", data);
+  return gasPost<{ rowIndex: number }>("addKolEntry", { clientSheetId, data, campaignRowIndex });
 }
 
 export async function updateKolEntry(
