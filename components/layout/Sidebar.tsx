@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { openAIAssistant } from "@/components/dashboard/AIAssistantShell";
 
 const nav = [
   {
@@ -61,6 +62,21 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      {/* AI Assistant trigger */}
+      <div className="px-3 pb-3">
+        <button
+          onClick={openAIAssistant}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:from-indigo-600 hover:to-purple-700 transition-all group"
+        >
+          <span className="text-base group-hover:scale-110 transition-transform">✨</span>
+          <span>AI Assistant</span>
+          <span className="ml-auto text-[10px] bg-white/20 px-1.5 py-0.5 rounded">Beta</span>
+        </button>
+        <p className="text-[10px] text-gray-400 mt-1.5 px-1 leading-snug">
+          Ask questions or draft copywriting
+        </p>
+      </div>
 
       <div className="px-4 py-3 border-t border-gray-100">
         <p className="text-xs text-gray-400">KOL Research Dashboard</p>

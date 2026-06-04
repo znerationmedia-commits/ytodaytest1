@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { AIAssistantShell } from "@/components/dashboard/AIAssistantShell";
 
 export const metadata: Metadata = {
   title: "YT Research Dashboard",
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="ml-56 min-h-full">
           <div className="max-w-7xl mx-auto px-6 py-8">{children}</div>
         </main>
+        <AIAssistantShell />
       </body>
     </html>
   );
