@@ -165,7 +165,10 @@ export async function POST(req: NextRequest) {
     contents,
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 2048,
+      // Gemini 2.5 Flash uses internal "thinking" tokens that count toward
+      // maxOutputTokens before it even writes a single character. 2048 was
+      // getting eaten by thinking and truncating the visible reply.
+      maxOutputTokens: 8192,
     },
   };
 
@@ -188,9 +191,18 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
-    const reply =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+    const candidate = data?.candidates?.[0];
+    // Gemini sometimes returns multiple parts — concatenate all text parts.
+    const parts: { text?: string }[] = candidate?.content?.parts ?? [];
+    let reply = parts.map((p) => p?.text ?? "").join("") ||
       "(No response generated — try rephrasing your question.)";
+
+    // If the model stopped because of MAX_TOKENS, append a hint so the UI shows it.
+    if (candidate?.finishReason === "MAX_TOKENS") {
+      reply += "\n\n*(Response was truncated — ask for a shorter list or be more specific.)*";
+    } else if (candidate?.finishReason === "SAFETY") {
+      reply = "(The model declined to answer this — try rephrasing.)";
+    }
 
     return Response.json({ success: true, reply });
   } catch (e) {

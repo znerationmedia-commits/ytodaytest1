@@ -208,7 +208,7 @@ function MessageBubble({ role, content }: { role: "user" | "assistant"; content:
   }
   return (
     <div className="flex justify-start">
-      <div className="max-w-[90%] bg-white border border-gray-200 text-sm text-gray-800 px-3.5 py-2.5 rounded-2xl rounded-bl-md whitespace-pre-wrap leading-relaxed">
+      <div className="max-w-[90%] min-w-0 bg-white border border-gray-200 text-sm text-gray-800 px-3.5 py-2.5 rounded-2xl rounded-bl-md leading-relaxed break-words">
         <FormattedReply text={content} />
       </div>
     </div>
@@ -225,16 +225,34 @@ function FormattedReply({ text }: { text: string }) {
     <>
       {lines.map((line, i) => {
         const trimmed = line.trim();
+        if (trimmed === "") return <div key={i} className="h-1" />;
+        // Bulleted line (- or *)
         if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
           return (
             <div key={i} className="flex gap-2 pl-1">
-              <span className="text-indigo-400">•</span>
-              <span className="flex-1">{renderInline(trimmed.slice(2))}</span>
+              <span className="text-indigo-400 flex-shrink-0">•</span>
+              <span className="flex-1 min-w-0 break-words">{renderInline(trimmed.slice(2))}</span>
             </div>
           );
         }
-        if (trimmed === "") return <div key={i} className="h-1" />;
-        return <div key={i}>{renderInline(line)}</div>;
+        // Numbered list line ("1. ", "12. ", etc.)
+        const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+        if (numMatch) {
+          return (
+            <div key={i} className="flex gap-2 pl-1">
+              <span className="text-indigo-500 font-semibold flex-shrink-0">{numMatch[1]}.</span>
+              <span className="flex-1 min-w-0 break-words">{renderInline(numMatch[2])}</span>
+            </div>
+          );
+        }
+        // Markdown heading (### ...)
+        if (trimmed.startsWith("### ")) {
+          return <div key={i} className="font-semibold text-gray-900 mt-1">{renderInline(trimmed.slice(4))}</div>;
+        }
+        if (trimmed.startsWith("## ")) {
+          return <div key={i} className="font-bold text-gray-900 mt-1">{renderInline(trimmed.slice(3))}</div>;
+        }
+        return <div key={i} className="break-words">{renderInline(line)}</div>;
       })}
     </>
   );
