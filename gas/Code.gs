@@ -245,9 +245,16 @@ function createClientSheet(campaignName, campaignRowIndex) {
   sheet.getRange(2, 5, 100, 1).setDataValidation(rule);
   sheet.getRange(2, 6, 100, 1).setDataValidation(rule);
 
-  // Share so anyone with the link can view (client access)
+  // Sharing: anyone in the team's Google Workspace (YToday Sdn Bhd) with the link
+  // can edit. Requires this script to run under a @youthstoday.com account; if it's
+  // running under a personal Gmail, fall back to "anyone with link, edit" so the
+  // team can still open & fill the sheet.
   var file = DriveApp.getFileById(newSS.getId());
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  try {
+    file.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.EDIT);
+  } catch (e) {
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.EDIT);
+  }
 
   var url = newSS.getUrl();
 
