@@ -18,6 +18,29 @@ interface KolTableProps {
 
 const interestOptions = ["", "YES", "NO"];
 
+/**
+ * Generate a short, readable label for a profile URL on any platform.
+ * Pulls the @handle for TikTok/IG/YouTube; falls back to the hostname.
+ */
+function formatProfileLabel(url: string): string {
+  if (!url) return "view";
+  // Handles like @username appear in many social URLs
+  const atMatch = url.match(/@([\w.\-]+)/);
+  if (atMatch) return `@${atMatch[1]}`;
+  // YouTube /channel/UC… or /c/Name
+  const ytMatch = url.match(/youtube\.com\/(?:channel\/|c\/|user\/)([\w.\-]+)/i);
+  if (ytMatch) return `YouTube/${ytMatch[1]}`;
+  // Fall back to hostname (e.g. "instagram.com")
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    const path = u.pathname.replace(/^\/+|\/+$/g, "").split("/")[0];
+    return path ? `${host}/${path}` : host;
+  } catch {
+    return url.length > 30 ? url.slice(0, 27) + "…" : url;
+  }
+}
+
 function InterestSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <select
@@ -98,7 +121,7 @@ export function KolTable({ kols, clientSheetLink, campaignRowIndex, onRefresh, o
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-4 py-2.5 font-medium text-gray-600 w-8">No.</th>
                 <th className="text-left px-4 py-2.5 font-medium text-gray-600">Name</th>
-                <th className="text-left px-4 py-2.5 font-medium text-gray-600">TikTok</th>
+                <th className="text-left px-4 py-2.5 font-medium text-gray-600">Profile</th>
                 <th className="text-left px-4 py-2.5 font-medium text-gray-600">Followers</th>
                 <th className="text-left px-4 py-2.5 font-medium text-gray-600">Interest (Client)</th>
                 <th className="text-left px-4 py-2.5 font-medium text-gray-600">Interest (KOL)</th>
@@ -114,7 +137,7 @@ export function KolTable({ kols, clientSheetLink, campaignRowIndex, onRefresh, o
                   <td className="px-4 py-2.5">
                     {kol.profileLink ? (
                       <a href={kol.profileLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline text-xs">
-                        @{kol.profileLink.split("@")[1]?.split("?")[0] || "view"}
+                        {formatProfileLabel(kol.profileLink)}
                       </a>
                     ) : <span className="text-gray-400">—</span>}
                   </td>

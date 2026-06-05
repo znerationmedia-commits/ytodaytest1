@@ -50,7 +50,7 @@ export function KolForm({ onSubmit, onCancel, initial }: KolFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">{error}</div>}
       <FormField label="Name" required value={form.name} onChange={set("name")} placeholder="KOL / Seeder name" />
-      <FormField label="TikTok Profile Link" value={form.profileLink} onChange={set("profileLink")} placeholder="https://www.tiktok.com/@username" />
+      <FormField label="Profile Link" value={form.profileLink} onChange={set("profileLink")} placeholder="https://… (TikTok, Instagram, YouTube, etc.)" />
       <FormField label="Followers" type="number" value={form.followers} onChange={set("followers")} placeholder="e.g. 4000" />
       <div className="grid grid-cols-2 gap-4">
         <SelectField label="Interest Check (Client)" value={form.interestCheckClient} onChange={set("interestCheckClient")} options={interestOptions} />
