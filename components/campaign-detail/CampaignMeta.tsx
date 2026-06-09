@@ -172,7 +172,20 @@ export function CampaignMeta({ campaign, kolList, onToast }: CampaignMetaProps) 
         <Row label="Timeline" value={campaign.timeline} />
         <Row label="Budget" value={campaign.budget} />
         <Row label="Revenue Size" value={campaign.revenueSize} />
-        <Row label="Category" value={campaign.category} />
+        {campaign.categoryFolder && (
+          <div>
+            <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Category Folder</dt>
+            <dd className="mt-0.5">
+              {/^https?:\/\//i.test(campaign.categoryFolder) ? (
+                <a href={campaign.categoryFolder} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 hover:underline break-all">
+                  Open folder ↗
+                </a>
+              ) : (
+                <span className="text-sm text-gray-900">{campaign.categoryFolder}</span>
+              )}
+            </dd>
+          </div>
+        )}
         {campaign.clientWebsite && (
           <div>
             <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Client Reference</dt>

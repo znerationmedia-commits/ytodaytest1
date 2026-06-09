@@ -20,7 +20,7 @@ interface CampaignFormProps {
 const empty: FormData = {
   pic: "", picSupport: "", urgent: "", revenueSize: "", dateRequest: "",
   bdName: "", agencyName: "", campaignName: "", stage: "", clientWebsite: "",
-  platformDetails: "", kolRequirement: "", budget: "", timeline: "", category: "",
+  platformDetails: "", kolRequirement: "", budget: "", timeline: "", categoryFolder: "",
   clientSheetLink: "", ytUniqueLink: "", ytAdminLink: "",
   internalSheet: "", copywriting: "", zynnApproval: "", telegramPosted: "",
   emailBlasted: "", fbGroupPosted: "", ytAdminContact: "", googleResearch: "", heepsyContact: "",
@@ -94,7 +94,7 @@ export function CampaignForm({ initial, mode, onSuccess }: CampaignFormProps) {
           <FormField label="Client Website / Reference" value={form.clientWebsite} onChange={set("clientWebsite")} placeholder="https://..." />
           <FormField label="Budget for Negotiation" value={form.budget} onChange={set("budget")} placeholder="e.g. RM 50 + product" />
           <FormField label="Timeline / Deadline" value={form.timeline} onChange={set("timeline")} placeholder="e.g. June 2026 / ASAP" />
-          <FormField label="Category" value={form.category} onChange={set("category")} placeholder="e.g. Beauty, F&B" className="md:col-span-2" />
+          <FormField label="Category Folder" value={form.categoryFolder} onChange={set("categoryFolder")} placeholder="Drive folder link or category name" className="md:col-span-2" />
           <TextareaField
             label="Platform & Deliverables" value={form.platformDetails} onChange={set("platformDetails")}
             placeholder={"Platform: TikTok\nFollowers: 1,000–5,000\nNo of pax: 10\nDeliverables: TT Video Content"}

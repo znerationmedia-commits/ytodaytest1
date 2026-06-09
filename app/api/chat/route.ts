@@ -23,7 +23,7 @@ interface Campaign {
   revenueSize: string;
   dateRequest: string;
   timeline: string;
-  category: string;
+  categoryFolder: string;
   platformDetails: string;
   kolRequirement: string;
   copywriting: string;
@@ -118,7 +118,7 @@ function compactCampaign(c: Campaign): string {
     c.budget && `budget:${c.budget}`,
     c.dateRequest && `requested:${c.dateRequest}`,
     c.timeline && `timeline:${c.timeline}`,
-    c.category && `cat:${c.category}`,
+    c.categoryFolder && `categoryFolder:${c.categoryFolder}`,
     pax,
     c.zynnApproval && `zynn:${c.zynnApproval}`,
     c.specialRemarks && `remarks:${c.specialRemarks}`,

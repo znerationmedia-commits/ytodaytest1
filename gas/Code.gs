@@ -93,7 +93,7 @@ function rowToCampaign(row, rowIndex) {
     kolRequirement: String(row[11] || ""),
     budget: String(row[12] || ""),
     timeline: String(row[13] || ""),
-    category: String(row[14] || ""),
+    categoryFolder: String(row[14] || ""),
     clientSheetLink: String(row[15] || ""),
     ytUniqueLink: String(row[16] || ""),
     ytAdminLink: String(row[17] || ""),
@@ -156,7 +156,7 @@ function createCampaign(data) {
     data.kolRequirement || "",
     data.budget || "",
     data.timeline || "",
-    data.category || "",
+    data.categoryFolder || "",  // col 15 (O) = Category Folder
     "",                        // col 16 (P) = clientSheetLink, auto-filled by createClientSheet
     data.ytUniqueLink || "",
     data.ytAdminLink || "",
@@ -185,7 +185,7 @@ function updateCampaign(rowIndex, data) {
   var colMap = {
     pic: 1, picSupport: 2, urgent: 3, revenueSize: 4, dateRequest: 5,
     bdName: 6, agencyName: 7, campaignName: 8, stage: 9, clientWebsite: 10,
-    platformDetails: 11, kolRequirement: 12, budget: 13, timeline: 14, category: 15,
+    platformDetails: 11, kolRequirement: 12, budget: 13, timeline: 14, categoryFolder: 15,
     clientSheetLink: 16, ytUniqueLink: 17, ytAdminLink: 18,
     internalSheet: 19, copywriting: 20, zynnApproval: 21, telegramPosted: 22,
     emailBlasted: 23, fbGroupPosted: 24, ytAdminContact: 25, googleResearch: 26,

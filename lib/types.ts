@@ -30,7 +30,7 @@ export interface Campaign {
   kolRequirement: string;
   budget: string;
   timeline: string;
-  category: string;
+  categoryFolder: string;
   clientSheetLink: string;
   ytUniqueLink: string;
   ytAdminLink: string;
