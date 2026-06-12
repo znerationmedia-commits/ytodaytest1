@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import type { Campaign } from "@/lib/types";
 
 // Statuses that count toward "active workload" — actions the PIC still owes
@@ -10,9 +9,13 @@ const ACTIVE_STATUSES = [
   "Client Feedback to Continue",
 ] as const;
 
-type ActiveStatus = typeof ACTIVE_STATUSES[number];
+// Synthetic bucket for "assisting" — when this person is in the picSupport
+// field of someone else's campaign. Distinct from the status-based buckets.
+const ASSISTING = "Assisting";
 
-const STATUS_STYLES: Record<ActiveStatus, { dot: string; chip: string; barFill: string; label: string }> = {
+type Bucket = typeof ACTIVE_STATUSES[number] | typeof ASSISTING;
+
+const BUCKET_STYLES: Record<Bucket, { dot: string; chip: string; barFill: string; label: string }> = {
   "Request Assign": {
     dot: "bg-red-500",
     chip: "bg-red-50 text-red-700 border-red-200",
@@ -25,48 +28,69 @@ const STATUS_STYLES: Record<ActiveStatus, { dot: string; chip: string; barFill: 
     barFill: "bg-yellow-400",
     label: "Client Feedback",
   },
+  [ASSISTING]: {
+    dot: "bg-violet-500",
+    chip: "bg-violet-50 text-violet-700 border-violet-200",
+    barFill: "bg-violet-400",
+    label: "Assisting",
+  },
 };
+
+const BUCKET_ORDER: Bucket[] = ["Request Assign", "Client Feedback to Continue", ASSISTING];
 
 interface PICWorkloadProps {
   /**
-   * Campaigns already filtered to "active statuses" by the parent
-   * (Request Assign / Done Reach Out / Client Feedback). No date cutoff —
-   * a campaign sits on the PIC's plate until its status moves forward.
+   * All assigned campaigns in ACTIVE_STATUSES — used for the main PIC count.
+   * picSupport (assisting role) is derived from the same set internally.
    */
   campaigns: Campaign[];
 }
 
 export function PICWorkload({ campaigns }: PICWorkloadProps) {
-  // Group by PIC → status counts
-  type PicRow = { pic: string; total: number } & Record<ActiveStatus, number>;
+  type PicRow = { pic: string; total: number } & Record<Bucket, number>;
   const map = new Map<string, PicRow>();
 
-  for (const c of campaigns) {
-    const pic = (c.pic || "Unassigned").trim() || "Unassigned";
-    if (!ACTIVE_STATUSES.includes(c.status as ActiveStatus)) continue;
-    const status = c.status as ActiveStatus;
-
-    if (!map.has(pic)) {
-      map.set(pic, {
-        pic,
+  function ensureRow(name: string): PicRow {
+    if (!map.has(name)) {
+      map.set(name, {
+        pic: name,
         total: 0,
         "Request Assign": 0,
         "Client Feedback to Continue": 0,
+        [ASSISTING]: 0,
       });
     }
-    const row = map.get(pic)!;
-    row.total += 1;
-    row[status] += 1;
+    return map.get(name)!;
+  }
+
+  for (const c of campaigns) {
+    const mainPic = (c.pic || "").trim();
+    const supportPic = (c.picSupport || "").trim();
+
+    // Main PIC role — only counts when the campaign status is one of the active buckets
+    if (mainPic && ACTIVE_STATUSES.includes(c.status as typeof ACTIVE_STATUSES[number])) {
+      const row = ensureRow(mainPic);
+      row[c.status as typeof ACTIVE_STATUSES[number]] += 1;
+      row.total += 1;
+    }
+
+    // Assisting role — anyone in picSupport gets a separate +1 (don't double-count
+    // if they're somehow listed as both)
+    if (supportPic && supportPic !== mainPic) {
+      const row = ensureRow(supportPic);
+      row[ASSISTING] += 1;
+      row.total += 1;
+    }
   }
 
   const rows = Array.from(map.values()).sort((a, b) => b.total - a.total);
   const maxTotal = Math.max(...rows.map((r) => r.total), 1);
 
-  // Totals across the team
   const teamTotal = rows.reduce((s, r) => s + r.total, 0);
-  const teamByStatus = {
+  const teamByBucket: Record<Bucket, number> = {
     "Request Assign": rows.reduce((s, r) => s + r["Request Assign"], 0),
     "Client Feedback to Continue": rows.reduce((s, r) => s + r["Client Feedback to Continue"], 0),
+    [ASSISTING]: rows.reduce((s, r) => s + r[ASSISTING], 0),
   };
 
   return (
@@ -75,24 +99,24 @@ export function PICWorkload({ campaigns }: PICWorkloadProps) {
         <div>
           <h3 className="text-base font-semibold text-gray-900">PIC Workload</h3>
           <p className="text-xs text-gray-400 mt-0.5">
-            Outstanding action per intern · Request Assign + Client Feedback (stays until moved forward)
+            Active campaigns per intern · main PIC + assisting (picSupport)
           </p>
         </div>
         <div className="text-right flex-shrink-0">
           <div className="text-2xl font-bold text-gray-900 leading-none">{teamTotal}</div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide mt-1">Active total</div>
+          <div className="text-[10px] text-gray-400 uppercase tracking-wide mt-1">Total assignments</div>
         </div>
       </div>
 
-      {/* Team-wide breakdown chips */}
+      {/* Team-wide bucket chips */}
       <div className="flex flex-wrap gap-2 mb-5 pb-4 border-b border-gray-100">
-        {ACTIVE_STATUSES.map((s) => {
-          const styles = STATUS_STYLES[s];
+        {BUCKET_ORDER.map((b) => {
+          const styles = BUCKET_STYLES[b];
           return (
-            <div key={s} className={`inline-flex items-center gap-2 text-xs font-medium px-2.5 py-1 rounded-full border ${styles.chip}`}>
+            <div key={b} className={`inline-flex items-center gap-2 text-xs font-medium px-2.5 py-1 rounded-full border ${styles.chip}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${styles.dot}`}></span>
               <span>{styles.label}</span>
-              <span className="font-bold">{teamByStatus[s]}</span>
+              <span className="font-bold">{teamByBucket[b]}</span>
             </div>
           );
         })}
@@ -121,31 +145,31 @@ export function PICWorkload({ campaigns }: PICWorkloadProps) {
 
               {/* Stacked bar */}
               <div className="flex h-2 rounded-full bg-gray-100 overflow-hidden mb-1.5">
-                {ACTIVE_STATUSES.map((s) => {
-                  const pct = (r[s] / maxTotal) * 100;
+                {BUCKET_ORDER.map((b) => {
+                  const pct = (r[b] / maxTotal) * 100;
                   if (pct === 0) return null;
                   return (
                     <div
-                      key={s}
-                      className={`${STATUS_STYLES[s].barFill} transition-all`}
+                      key={b}
+                      className={`${BUCKET_STYLES[b].barFill} transition-all`}
                       style={{ width: `${pct}%` }}
-                      title={`${STATUS_STYLES[s].label}: ${r[s]}`}
+                      title={`${BUCKET_STYLES[b].label}: ${r[b]}`}
                     />
                   );
                 })}
               </div>
 
-              {/* Per-status counts */}
+              {/* Per-bucket chips */}
               <div className="flex flex-wrap gap-1.5">
-                {ACTIVE_STATUSES.map((s) => {
-                  if (r[s] === 0) return null;
+                {BUCKET_ORDER.map((b) => {
+                  if (r[b] === 0) return null;
                   return (
                     <span
-                      key={s}
-                      className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border ${STATUS_STYLES[s].chip}`}
+                      key={b}
+                      className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border ${BUCKET_STYLES[b].chip}`}
                     >
-                      <span className={`w-1 h-1 rounded-full ${STATUS_STYLES[s].dot}`}></span>
-                      {STATUS_STYLES[s].label} {r[s]}
+                      <span className={`w-1 h-1 rounded-full ${BUCKET_STYLES[b].dot}`}></span>
+                      {BUCKET_STYLES[b].label} {r[b]}
                     </span>
                   );
                 })}
@@ -154,12 +178,6 @@ export function PICWorkload({ campaigns }: PICWorkloadProps) {
           ))}
         </ul>
       )}
-
-      <div className="mt-4 pt-3 border-t border-gray-100 text-right">
-        <Link href="/campaigns" className="text-xs text-indigo-600 hover:underline">
-          View all campaigns →
-        </Link>
-      </div>
     </div>
   );
 }
